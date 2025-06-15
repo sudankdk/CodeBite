@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+
+# Django specific
+*.sqlite3
+db.sqlite3
+/media/
+/staticfiles/
+/static/
+/*.pot
+*.pyc
+local_settings.py
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Pipenv / Poetry
+Pipfile.lock
+poetry.lock
+
+# Pytest / coverage
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Docker
+*.env
+.env.*
+docker-compose.override.yml
+
+# Migrations (optional: if you don't want to track them initially)
+**/migrations/*.py
+!*/migrations/__init__.py
+
+# Media/uploads
+media/
+uploads/
+
+# Logs
+logs/
+*.log

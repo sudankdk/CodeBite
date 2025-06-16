@@ -127,3 +127,47 @@ class ProfileApi(ModelViewSet):
             return Response({
                 "error": f"Error in adding skills: {e}"
             })
+    
+    @action(detail=False, methods=['post'])
+    def add_skill_offered(self,request):
+        try:
+            profile=Profile.objects.get(user=request.user)
+            skill_id= request.data.get('skills',[])
+            if not isinstance(skill_id,list):
+                return Response({
+                    "error":"Expected a list of id",
+
+                },status=status.HTTP_400_BAD_REQUEST)
+            skills=Skills.objects.filter(id__in=skill_id)
+            profile.skills_offered.add(*skills)
+            profile.save()
+            serializer= self.get_serializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Error in adding skills: {e}"
+            })
+            
+    @action(detail=True, methods=['post'])
+    def rate_user(self,request,pk=None):
+        try:
+            profile= self.get_object()
+            rating = request.data.get("rating")
+            if rating is None:
+                return Response({"error": "rating must be a number and cannot be none."},status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                rating = float(rating)
+                if rating < 0 or rating > 5:
+                    return Response({"error": "Rating must be between 0 and 5."}, status=status.HTTP_400_BAD_REQUEST)
+            except ValueError:
+                return Response({"error": "Invalid rating format."}, status=status.HTTP_400_BAD_REQUEST)
+            profile.update_rating(rating)
+            serializer= self.get_serializer(profile)
+            return Response(serializer.data)
+        except Profile.DoesNotExist:
+            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                "error":f"Error in rating users: {e}"
+            })

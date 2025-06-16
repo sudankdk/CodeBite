@@ -107,6 +107,7 @@ class ProfileApi(ModelViewSet):
         except Profile.DoesNotExist:
                 return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
+
     @action(detail=False, methods=['post'])
     def add_skill_sought(self,request):
         try:
@@ -124,5 +125,5 @@ class ProfileApi(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({
-                "error": f"Error in adding skills; ${e}"
+                "error": f"Error in adding skills: {e}"
             })

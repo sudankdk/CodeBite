@@ -22,3 +22,22 @@ class SkillsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Skills
         fields="__all__"
+        
+class ProfileSerializer(serializers.ModelSerializer):
+    user= MyUserSerializer(read_only=True)
+    skills_offered= serializers.PrimaryKeyRelatedField(many=True,queryset=Skills.objects.all())
+    skills_sought= serializers.PrimaryKeyRelatedField(many=True, queryset=Skills.objects.all())
+    
+    class Meta:
+        model= Profile
+        fields=['id',
+            'user',
+            'bio',
+            'skills_offered',
+            'skills_sought',
+            'average_rating',
+            'review_count',
+            'profile_image',
+            'location',
+            'created_at',
+            'updated_at']

@@ -2,16 +2,18 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .serializers import RegisterSerializer,MyUserSerializer,SkillsSerializer
+from .serializers import RegisterSerializer,MyUserSerializer,SkillsSerializer,ProfileSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import authentication, permissions
-from .models import Skills
+from .models import Skills,Profile
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import action
+
 
 
 
@@ -88,3 +90,39 @@ class SkillApi(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     
+    
+class ProfileApi(ModelViewSet):
+    serializer_class = ProfileSerializer
+    queryset=Profile.objects.all()
+    authentication_classes= [JWTAuthentication]
+    permission_classes=[IsAuthenticated]
+    
+    
+    @action(detail=False,methods=['get'])
+    def me(self,request):
+        try:
+            profile = Profile.objects.get(user=request.user)
+            serializer=self.get_serializer(profile)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Profile.DoesNotExist:
+                return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'])
+    def add_skill_sought(self,request):
+        try:
+            profile=Profile.objects.get(user=request.user)
+            skill_id= request.data.get('skills',[])
+            if not isinstance(skill_id,list):
+                return Response({
+                    "error":"Expected a list of id",
+
+                },status=status.HTTP_400_BAD_REQUEST)
+            skills=Skills.objects.filter(id__in=skill_id)
+            profile.skills_sought.add(*skills)
+            profile.save()
+            serializer= self.get_serializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Error in adding skills; ${e}"
+            })

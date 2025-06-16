@@ -2,9 +2,19 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .serializers import RegisterSerializer,MyUserSerializer
+from .serializers import RegisterSerializer,MyUserSerializer,SkillsSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import authentication, permissions
+from .models import Skills
+from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
+
 
 
 @api_view(['POST'])
@@ -27,7 +37,7 @@ class Login(TokenObtainPairView):
             key='access_token',
             value=access,
             httponly=True,
-            secure=False,
+            secure=True,
             samesite='Lax',
             max_age=3600,
         )
@@ -36,18 +46,18 @@ class Login(TokenObtainPairView):
             key='refresh_token',
             value=refresh,
             httponly=True,
-            secure=False,
+            secure=True,
             samesite='Lax',
             max_age=7*24*3600,
         )
-        return Response({"message": "Login successful"})
+        return response
 
 class Refresh(TokenRefreshView):
     def post(self,request,*args,**kwargs):
         try:
             refresh_token = request.COOKIES.get('refresh_token')
             request.data['refresh']=refresh_token
-            response= super().Post(request,*args,*kwargs)
+            response= super().post(request,*args,*kwargs)
             access_token = response.data['access']
             
             response.set_cookie(
@@ -58,7 +68,7 @@ class Refresh(TokenRefreshView):
             samesite='Lax',
             max_age=3600,
             )
-            Response({"message": "Refreshed successful"})
+            return Response({"message": "Refreshed successful"})
             
         except Exception as e:
             return Response({
@@ -71,3 +81,10 @@ def logout(request):
     response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
     return response
+
+class SkillApi(ModelViewSet):
+    serializer_class=SkillsSerializer
+    queryset=Skills.objects.all()
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    

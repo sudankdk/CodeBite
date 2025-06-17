@@ -24,6 +24,25 @@ class CodeSubmissionApi(ModelViewSet):
         serializer= self.get_serializer(submissions,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
+    @action(detail=True,methods=['post'])
+    def accept_bid(self,request,pk=None):
+        codesubmission=self.get_object()
+        bid_id=request.data.get("bid")
+        if not bid_id:
+                return Response({"error": "Bid ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            bid=Bid.objects.get(id=bid_id,submission=codesubmission)
+            pass
+        except Bid.DoesNotExist:
+                 return Response({"error": "Invalid bid ID for this submission."}, status=status.HTTP_404_NOT_FOUND)
+
+
+        codesubmission.accepted_bid=bid
+        codesubmission.status="locked"
+        codesubmission.save()
+        serializer=self.get_serializer(codesubmission)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
     
 class BidApi(ModelViewSet):
     queryset= Bid.objects.all()
